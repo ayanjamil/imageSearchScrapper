@@ -1,4 +1,5 @@
 const pup = require('puppeteer');
+const fs = require('fs');
 
 let browser, page;
 
@@ -18,8 +19,8 @@ async function searchUrl(url) {
     await page.click('div[jscontroller="lpsUAf"][jsname="R5mgy"]'); // google lense button 
     await page.type('input[jsname="W7hAGe"][class="cB9M7"]', url); // Paste image link field
     await page.click('div[jsname="ZtOxCb"][class="Qwbd3"]'); // search button
-
 }
+
 async function getResults() {
     await new Promise(resolve => setTimeout(resolve, 15000));
     const cards = await page.evaluate(() => {
@@ -34,9 +35,8 @@ async function getResults() {
         });
     });
     console.log(cards);
+    return cards; // Return the results
 }
-
-
 
 async function closeBrowser() {
     console.log("closing Browser");
@@ -47,7 +47,14 @@ async function closeBrowser() {
 async function run() {
     await openGoogleLens();
     await searchUrl('https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQ2I-32bc1Ua0bz-TbGOMTE4L_zHX-3oLsdJHEREJQ6tHuzuD6V');
-    await getResults();
+    const results = await getResults();
+
+    fs.writeFile('output.json', JSON.stringify(results, null, 2), function (err) {
+        if (err) throw err;
+        console.log('File saved.');
+    });
+
+    await closeBrowser();
 }
 
 run();
